@@ -1,10 +1,11 @@
 require 'openssl'
 class BipMnemonic
-  VERSION = '0.0.3'.freeze
+  VERSION = '0.0.4'.freeze
 
   def self.to_mnemonic(options)
     options ||= {}
     bits = options[:bits] || 128
+    language = options[:language] || "english"
     if options[:entropy].nil?
       entropy_bytes = OpenSSL::Random.random_bytes(bits / 8)
     else
@@ -15,7 +16,7 @@ class BipMnemonic
     seed_binary = entropy_binary + checksum(entropy_binary)
     words_array = File.readlines(
       File.join(
-        File.dirname(File.expand_path(__FILE__)), '../words/english.txt'
+        File.dirname(File.expand_path(__FILE__)), '../words/', language + '.txt'
       )
     ).map(&:strip)
     seed_binary.chars
@@ -28,11 +29,12 @@ class BipMnemonic
 
   def self.to_entropy(options)
     options ||= {}
+    language = options[:language] || "english"
     raise ArgumentError, 'Mnemonic not set' if options[:mnemonic].nil?
     raise ArgumentError, 'Mnemonic is empty' if options[:mnemonic].empty?
     words_array = File.readlines(
       File.join(
-        File.dirname(File.expand_path(__FILE__)), '../words/english.txt'
+        File.dirname(File.expand_path(__FILE__)), '../words/', language + '.txt'
       )
     ).map(&:strip)
     mnemonic_array = options[:mnemonic].split(' ').map do |word|
